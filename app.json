@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Team Coco",
+    "slug": "team-coco-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF6B00"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.teamcoco.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo.png",
+        "backgroundColor": "#FF6B00"
+      },
+      "package": "com.teamcoco.app"
+    },
+    "web": {
+      "favicon": "./assets/images/logo.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FF6B00",
+          "image": "./assets/images/logo.png",
+          "imageWidth": 200
+        }
+      ]
+    ],
+    "scheme": "teamcoco"
+  }
+}
