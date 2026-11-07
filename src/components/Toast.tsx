@@ -1,5 +1,5 @@
 import React, { useState, useCallback, createContext, useContext, ReactNode } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, ViewStyle, Platform } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../theme/colors';
 
 interface ToastContextType {
@@ -21,7 +21,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       toValue: 1,
       duration: 200,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
 
     setTimeout(() => {
@@ -29,7 +29,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         toValue: 0,
         duration: 200,
         easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start(({ finished }) => {
         if (finished) {
           setToasts(prev => prev.filter(t => t.id !== id));
@@ -41,7 +41,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <View style={styles.container} pointerEvents="none">
+      <View style={styles.container}>
         {toasts.map(toast => (
           <Animated.View
             key={toast.id}
@@ -52,7 +52,6 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 transform: [{ translateY: toast.anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }],
               },
             ]}
-            pointerEvents="auto"
           >
             <Text style={styles.toastText}>{toast.message}</Text>
           </Animated.View>
@@ -78,14 +77,15 @@ const styles = StyleSheet.create({
     right: spacing.md,
     alignItems: 'center',
     zIndex: 1000,
-    pointerEvents: 'none',
   },
   toast: {
     backgroundColor: colors.black,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.md,
-    ...shadows.lg,
+    ...(Platform.OS === 'web' ? {
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    } : shadows.lg),
     borderWidth: 1,
     borderColor: colors.primary,
     minWidth: 200,

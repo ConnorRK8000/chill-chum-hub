@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, Linking, ViewStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Line, Circle } from 'react-native-svg';
-import { WebView } from 'react-native-webview';
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, Linking, SafeAreaView, Platform, RefreshControl } from 'react-native';
+import Svg, { Path, Line, Circle, Rect, Polyline, Text as SvgText } from 'react-native-svg';
 import { VideoService, videoService } from '../services';
-import {
-  Header,
-  Button,
-  Card,
-  LoadingSpinner,
-  Skeleton,
-  SkeletonCard,
-} from '../components';
+import { Header, SectionHeader, Card, LoadingSpinner, Skeleton, SkeletonCard, 
+Footer } from '../components';
 import { colors, spacing, borderRadius, typography, shadows } from '../theme/colors';
 import { VideoResponse } from '../types';
 
-// Platform icon SVGs using react-native-svg
+// Platform icon SVGs - exact size from CSS (30px)
 const YouTubeIcon: React.FC<{ size?: number; color?: string }> = ({ size = 30, color = 'white' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
     <Path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
@@ -42,9 +34,45 @@ const WebIcon: React.FC<{ size?: number; color?: string }> = ({ size = 30, color
   </Svg>
 );
 
+// HBO Max icon using SVG text (matching HTML exactly)
+const HBOIcon: React.FC<{ size?: number; color?: string }> = ({ size = 48, color = 'white' }) => (
+  <Svg width={size} height={size} viewBox="0 0 60 50" fill={color}>
+    <SvgText x="30" y="20" fontFamily="Arial Black, sans-serif" fontSize={26} fontWeight="bold" textAnchor="middle" fill={color}>HBO</SvgText>
+    <SvgText x="30" y="42" fontFamily="Arial Black, sans-serif" fontSize={26} fontWeight="bold" textAnchor="middle" fill={color}>Max</SvgText>
+  </Svg>
+);
+
+const PlayButton: React.FC<{ size: number; color?: string }> = ({ size, color = 'rgba(255,107,0,0.9)' }) => (
+  <View
+    style={{
+      width: size,
+      height: size,
+      borderRadius: size / 2,
+      backgroundColor: color,
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}
+  >
+    <View
+      style={{
+        width: 0,
+        height: 0,
+        borderLeftWidth: size * 0.55,
+        borderTopWidth: size * 0.32,
+        borderBottomWidth: size * 0.32,
+        borderLeftColor: 'white',
+        borderTopColor: 'transparent',
+        borderBottomColor: 'transparent',
+        marginLeft: size * 0.1,
+      }}
+    />
+  </View>
+);
+
 export const HomeScreen: React.FC = () => {
   const [latestVideo, setLatestVideo] = useState<VideoResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,20 +93,17 @@ export const HomeScreen: React.FC = () => {
     }
   };
 
-  const formatViews = (views: string): string => {
-    const num = parseInt(views, 10);
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-    return num.toString();
-  };
-
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const video = await videoService.forceRefresh();
+      setLatestVideo(video);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load latest video');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const handleWatchOnYouTube = (videoId: string) => {
@@ -105,11 +130,10 @@ export const HomeScreen: React.FC = () => {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.headerSpacer} />
-          <View style={styles.brandContainer}>
-            <Skeleton width="60%" height={40} style={styles.brandSkeleton} />
-          </View>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FF6B00']} tintColor="#FF6B00" />}
+      >
           <View style={styles.clipLabel}>
             <Skeleton width="40%" height={16} />
           </View>
@@ -125,14 +149,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerSpacer} />
-
-        {/* Brand */}
-        <View style={styles.brandContainer}>
-          <Text style={styles.brand}>Team Coco</Text>
-        </View>
-
-        {/* Latest Clip Label */}
+        {/* Latest Clip Label - exact CSS: font-size: 0.875rem (14px), margin-bottom: 0.75rem (12px) */}
         <View style={styles.clipLabel}>
           <Text style={styles.clipLabelText}>
             {video?.publishedAt
@@ -141,19 +158,35 @@ export const HomeScreen: React.FC = () => {
           </Text>
         </View>
 
-        {/* Video Clip Card */}
+        {/* Video Clip Card - exact CSS: height: 280px for thumbnail, border-radius: 12px, margin-bottom: 1.5rem (24px) */}
         <Card variant="elevated" style={styles.clipCard}>
           {hasVideo && video?.videoId ? (
             <>
               <View style={styles.videoContainer}>
-                <WebView
-                  source={{ uri: VideoService.getEmbedUrl(video.videoId) }}
-                  style={styles.webView}
-                  javaScriptEnabled={true}
-                  domStorageEnabled={true}
-                  mediaPlaybackRequiresUserAction={false}
-                  allowsInlineMediaPlayback={true}
-                />
+                {Platform.OS === 'web' ? (
+                  React.createElement('iframe', {
+                    src: VideoService.getEmbedUrl(video.videoId),
+                    title: video.title,
+                    style: { width: '100%', height: '100%', border: 'none' },
+                    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+                    allowFullScreen: true,
+                  })
+                ) : (
+                  <TouchableOpacity
+                    style={styles.thumbnailContainer}
+                    onPress={() => handleWatchOnYouTube(video.videoId!)}
+                    activeOpacity={0.9}
+                  >
+                    <Image
+                      source={{ uri: VideoService.getThumbnailUrl(video.videoId) }}
+                      style={styles.thumbnailImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.playOverlay}>
+                      <PlayButton size={72} />
+                    </View>
+                  </TouchableOpacity>
+                )}
               </View>
               <TouchableOpacity
                 style={styles.watchButton}
@@ -177,7 +210,7 @@ export const HomeScreen: React.FC = () => {
           )}
         </Card>
 
-        {/* Platforms */}
+        {/* Platforms - exact CSS: gap: 1rem (16px), margin-bottom: 1rem (16px) */}
         <View style={styles.platformsLabel}>
           <Text style={styles.platformsLabelText}>Watch/Listen Now On...</Text>
         </View>
@@ -213,37 +246,38 @@ export const HomeScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* SiriusXM */}
+        {/* SiriusXM - exact CSS: margin: 1rem 0 (16px) */}
         <View style={styles.sirius}>
           <Text style={styles.siriusText}>Also on SiriusXM Channel 104</Text>
         </View>
 
-        {/* HBO Max Show */}
+        {/* HBO Max Show - exact CSS: padding: 1rem (16px), gap: 1rem (16px) */}
         <View style={styles.showContainer}>
           <TouchableOpacity
             style={styles.showLink}
             onPress={() => handlePlatformPress('https://www.max.com/')}
             activeOpacity={0.8}
           >
-            <View style={styles.showIcon}>
-              <Text style={styles.showIconText}>
-                HBO\nMax
-              </Text>
-            </View>
+             <View style={styles.showIcon}>
+               <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                 <Rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
+                 <Polyline points="17 2 12 7 7 2" />
+               </Svg>
+             </View>
             <View style={styles.showInfo}>
-              <Text style={styles.showTitle}>Conan O'Brien Must Go</Text>
+              <Text style={styles.showTitle}>Conan O&apos;Brien Must Go</Text>
               <Text style={styles.showSubtitle}>Now streaming on Max</Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* Contact Section */}
+        {/* Contact Section - exact CSS: margin-top: 2rem (32px), padding: 1.5rem (24px) */}
         <Card variant="outlined" style={styles.contactCard}>
-          <Text style={styles.contactTitle}>Reach Out To Us</Text>
+          <Text style={styles.contactTitle}>Contact Info</Text>
 
           <View style={styles.contactItem}>
             <Text style={styles.contactText}>
-              <Text style={styles.contactStrong}>Conan O'Brien Needs a Friend Voicemail:</Text>{' '}
+              <Text style={styles.contactStrong}>Conan O&apos;Brien Needs a Friend Voicemail:</Text>{' '}
               Call{' '}
               <TouchableOpacity
                 onPress={() => handlePhonePress('+13233622295')}
@@ -278,7 +312,7 @@ export const HomeScreen: React.FC = () => {
 
           <View style={styles.contactItem}>
             <Text style={styles.contactText}>
-              <Text style={styles.contactStrong}>Conan O'Brien Needs A Fan Application:</Text>{' '}
+              <Text style={styles.contactStrong}>Conan O&apos;Brien Needs A Fan Application:</Text>{' '}
               Wanna talk to Conan? Click{' '}
               <TouchableOpacity
                 onPress={() => handleWebPress('https://conanobrien.com/apply')}
@@ -290,226 +324,226 @@ export const HomeScreen: React.FC = () => {
             </Text>
           </View>
         </Card>
+
+        <Footer />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const PlayButton: React.FC<{ size: number }> = ({ size }) => (
-  <View
-    style={{
-      width: size,
-      height: size,
-      borderRadius: size / 2,
-      backgroundColor: colors.primary + 'E6',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <View
-      style={{
-        width: 0,
-        height: 0,
-        borderLeftWidth: size * 0.45,
-        borderTopWidth: size * 0.26,
-        borderBottomWidth: size * 0.26,
-        borderLeftColor: colors.white,
-        borderTopColor: 'transparent',
-        borderBottomColor: 'transparent',
-        marginLeft: size * 0.08,
-      }}
-    />
-  </View>
-);
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray50,
+    backgroundColor: '#F9FAFB',
   },
+  // Exact CSS: .home-container { max-width: 500px; margin: 0 auto; padding: 1rem 0; }
   scrollContent: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: 100,
+    paddingHorizontal: 16,
+    paddingBottom: 0,
     maxWidth: 500,
     alignSelf: 'center',
     width: '100%',
+    paddingTop: 0,
   },
-  headerSpacer: {
-    height: 20,
-  },
+  // Exact CSS: .home-brand { font-size: 2.5rem (40px); font-weight: 900; margin-bottom: 1.5rem (24px); }
   brandContainer: {
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: 24,
   },
   brand: {
-    fontSize: typography.fontSize.hero,
+    fontSize: 40,
     fontWeight: '900',
-    color: colors.black,
+    color: '#000000',
     textAlign: 'center',
-    letterSpacing: -1,
+    letterSpacing: -0.8,
     textTransform: 'uppercase',
   },
+  // Exact CSS: .home-clip-label { font-size: 0.875rem (14px); margin-bottom: 0.75rem (12px); }
   clipLabel: {
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 12,
+    paddingTop: 16,
   },
   clipLabelText: {
-    fontSize: typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.gray600,
+    color: '#4B5563',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
   },
+  // Exact CSS: .home-clip-card { border-radius: 12px; margin-bottom: 1.5rem (24px); border: 2px solid primary; }
   clipCard: {
-    marginBottom: spacing.lg,
+    marginBottom: 24,
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: '#FF6B00',
     overflow: 'hidden',
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.black,
+    borderRadius: 12,
+    backgroundColor: '#000000',
   },
+  // Exact CSS: .home-clip-thumbnail { height: 280px; }
   videoContainer: {
     width: '100%',
     aspectRatio: 16 / 9,
+  },
+  thumbnailContainer: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+  playOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   webView: {
     width: '100%',
     height: '100%',
   },
+  // Watch button positioning
   watchButton: {
     position: 'absolute',
-    bottom: spacing.md,
-    right: spacing.md,
+    bottom: 16,
+    right: 16,
     zIndex: 10,
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
+    backgroundColor: '#FF6B00',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
     ...shadows.lg,
   },
   watchButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSize.sm,
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
   },
   placeholderContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    padding: 32,
   },
   placeholderImage: {
     width: '80%',
     maxWidth: 300,
-    marginTop: spacing.md,
+    marginTop: 16,
   },
+  // Exact CSS: .home-platforms-label { margin-bottom: 0.75rem (12px); font-size: 0.875rem (14px); }
   platformsLabel: {
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 12,
   },
   platformsLabelText: {
-    fontSize: typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.gray600,
+    color: '#4B5563',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
   },
+  // Exact CSS: .home-platforms { gap: 1rem (16px); margin-bottom: 1rem (16px); }
   platforms: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.md,
+    gap: 16,
+    marginBottom: 16,
   },
+  // Exact CSS: .home-platform { width: 56px; height: 56px; border-radius: 50%; }
   platform: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.black,
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // Exact CSS: .home-sirius { margin: 1rem 0 (16px); font-size: 0.875rem (14px); }
   sirius: {
     alignItems: 'center',
-    marginVertical: spacing.lg,
+    marginVertical: 16,
   },
   siriusText: {
-    fontSize: typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.primary,
+    color: '#FF6B00',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
   },
+  // Exact CSS: .home-show-link { padding: 1rem (16px); gap: 1rem (16px); }
   showContainer: {
-    marginVertical: spacing.lg,
+    marginVertical: 24,
   },
   showLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.black,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
+    gap: 16,
+    backgroundColor: '#000000',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
+  // Exact CSS: .home-show-icon { width: 48px; height: 48px; border-radius: 50%; }
   showIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.primary,
+    backgroundColor: '#FF6B00',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  showIconText: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: '800',
-    color: colors.white,
-    textAlign: 'center',
-    lineHeight: 16,
-    fontFamily: 'Arial Black',
   },
   showInfo: {
     flex: 1,
   },
   showTitle: {
-    fontSize: typography.fontSize.md,
+    fontSize: 16,
     fontWeight: '800',
-    color: colors.white,
-    marginBottom: spacing.xs / 2,
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
   showSubtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray300,
+    fontSize: 14,
+    color: '#D1D5DB',
   },
+  // Exact CSS: .home-contact { margin-top: 2rem (32px); padding: 1.5rem (24px); }
   contactCard: {
-    marginTop: spacing.xl,
-    padding: spacing.lg,
+    marginTop: 32,
+    padding: 24,
     borderWidth: 2,
-    borderColor: colors.gray200,
+    borderColor: '#E5E7EB',
   },
   contactTitle: {
-    fontSize: typography.fontSize.md,
+    fontSize: 16,
     fontWeight: '800',
-    color: colors.gray900,
+    color: '#111827',
     textAlign: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 16,
   },
   contactItem: {
-    marginBottom: spacing.md,
+    marginBottom: 12,
   },
   contactText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray700,
+    fontSize: 14,
+    color: '#374151',
     lineHeight: 22,
   },
   contactStrong: {
-    color: colors.gray900,
+    color: '#111827',
     fontWeight: '700',
   },
   contactLink: {},
   contactLinkText: {
-    color: colors.primary,
+    color: '#FF6B00',
     fontWeight: '600',
   },
   brandSkeleton: {
-    borderRadius: borderRadius.md,
+    borderRadius: 8,
   },
 });

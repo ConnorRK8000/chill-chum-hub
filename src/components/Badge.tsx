@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   tabBase: {
     flex: 1,
-    paddingVertical: spacing.sm,
+    paddingVertical: 10,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
   },

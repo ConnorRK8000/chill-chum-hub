@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, SafeAreaView, TextInput, Keyboard } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, SafeAreaView, TextInput, Keyboard, RefreshControl } from 'react-native';
 import {
-  Header,
   TabButton,
   PostCard,
   FanArtCard,
@@ -10,6 +9,8 @@ import {
   LoadingSpinner,
   Skeleton,
   Card,
+  useToast,
+  Footer,
 } from '../components';
 import { colors, spacing, borderRadius, typography, shadows } from '../theme/colors';
 import { mockPosts, mockFanArt } from '../data/mockData';
@@ -22,7 +23,9 @@ export const CommunityScreen: React.FC = () => {
   const [newPostText, setNewPostText] = useState('');
   const [charCount, setCharCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const { showToast } = useToast();
 
   const maxChars = 500;
 
@@ -33,6 +36,14 @@ export const CommunityScreen: React.FC = () => {
       setLoading(false);
     }, 300);
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setPosts(mockPosts);
+      setRefreshing(false);
+    }, 300);
+  };
 
   const handlePostChange = useCallback((text: string) => {
     setNewPostText(text);
@@ -56,26 +67,27 @@ export const CommunityScreen: React.FC = () => {
     setNewPostText('');
     setCharCount(0);
     setSubmitting(false);
-  }, [newPostText, submitting]);
+    showToast('Post created!');
+  }, [newPostText, submitting, showToast]);
 
   const handleLike = (postId: string) => {
     setPosts(prev => prev.map(post =>
       post.id === postId ? { ...post, likes: post.likes + 1 } : post
     ));
+    showToast('Liked post!');
   };
 
   const handleReply = () => {
-    console.log('Reply pressed');
+    showToast('Reply coming soon!');
   };
 
   const handleShare = () => {
-    console.log('Share pressed');
+    showToast('Link copied!');
   };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header title="Community" />
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.tabContainer}>
             <Skeleton width="100%" height={50} />
@@ -85,17 +97,17 @@ export const CommunityScreen: React.FC = () => {
           </Card>
           <Skeleton width="100%" height={120} style={styles.skeletonPost} />
           <Skeleton width="100%" height={120} style={styles.skeletonPost} />
-        </ScrollView>
+      </ScrollView>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Community" />
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FF6B00']} tintColor="#FF6B00" />}
       >
         {/* Tabs */}
         <View style={styles.tabContainer}>
@@ -111,6 +123,7 @@ export const CommunityScreen: React.FC = () => {
           />
         </View>
 
+        <View style={styles.tabContent}>
         {tab === 'discussions' && (
           <>
             {/* New Post Form */}
@@ -177,6 +190,8 @@ export const CommunityScreen: React.FC = () => {
             )}
           </View>
         )}
+        </View>
+        <Footer />
       </ScrollView>
     </SafeAreaView>
   );
@@ -189,28 +204,37 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingBottom: 0,
   },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: colors.white,
-    padding: spacing.xs,
+    padding: 6,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.lg,
     ...shadows.sm,
+  },
+  tabContent: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    ...shadows.sm,
+    minHeight: 400,
   },
   formCard: {
     marginBottom: spacing.lg,
     padding: spacing.md,
     borderWidth: 2,
     borderColor: colors.gray200,
+    backgroundColor: colors.gray50,
+    borderRadius: borderRadius.md,
   },
   textArea: {
     fontSize: typography.fontSize.md,
     color: colors.gray900,
-    marginBottom: spacing.md,
+    marginBottom: 12,
     minHeight: 80,
-    padding: spacing.md,
+    padding: 12,
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.gray300,
@@ -223,7 +247,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   charCount: {
-    fontSize: typography.fontSize.xs,
+    fontSize: typography.fontSize.sm,
     color: colors.gray600,
   },
   charCountError: {

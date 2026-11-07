@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal as RNModal, TouchableOpacity, ViewStyle, TextStyle, Animated, Easing } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { colors, spacing, borderRadius, typography, shadows } from '../theme/colors';
+import { VideoService } from '../services/VideoService';
 
 export interface ModalProps {
   visible: boolean;
@@ -130,6 +132,8 @@ export const VideoModal: React.FC<VideoModalProps> = ({
     });
   };
 
+  const videoUrl = video ? VideoService.getEmbedUrl(video.videoId) : '';
+
   return (
     <Modal
       visible={visible}
@@ -139,9 +143,15 @@ export const VideoModal: React.FC<VideoModalProps> = ({
       {video && (
         <>
           <View style={styles.videoPlayer}>
-            <View style={styles.videoPlaceholder}>
-              <PlayButton size={72} />
-            </View>
+            <WebView
+              source={{ uri: videoUrl }}
+              style={styles.webView}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              mediaPlaybackRequiresUserAction={false}
+              allowsInlineMediaPlayback={true}
+              originWhitelist={['*']}
+            />
           </View>
           <View style={styles.videoInfo}>
             <Text style={styles.videoTitle}>{video.title}</Text>
@@ -238,11 +248,9 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     backgroundColor: colors.gray900,
   },
-  videoPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
+  webView: {
+    width: '100%',
+    height: '100%',
   },
   videoInfo: {
     padding: spacing.lg,

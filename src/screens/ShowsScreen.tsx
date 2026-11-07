@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, SafeAreaView, Linking } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, SafeAreaView, Linking, RefreshControl } from 'react-native';
 import {
-  Header,
   ShowCard,
   FilterChip,
   LoadingSpinner,
   Skeleton,
   SectionHeader,
+  Footer,
 } from '../components';
 import { colors, spacing, borderRadius, typography, shadows } from '../theme/colors';
 import { Show } from '../types';
@@ -16,6 +16,7 @@ export const ShowsScreen: React.FC = () => {
   const [shows, setShows] = useState<Show[]>([]);
   const [filteredShows, setFilteredShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
 
@@ -42,6 +43,24 @@ export const ShowsScreen: React.FC = () => {
     loadShows();
   }, []);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setError(null);
+    try {
+      const shows = await showsService.forceRefresh();
+      if (shows && shows.length > 0) {
+        setShows(shows);
+      } else {
+        setShows([]);
+      }
+    } catch (err) {
+      console.error('[ShowsScreen] Fetch error:', err);
+      setShows([]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     let filtered = shows;
@@ -59,7 +78,6 @@ export const ShowsScreen: React.FC = () => {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header title="Upcoming Shows" />
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.filterContainer}>
             <Skeleton width="100%" height={40} />
@@ -75,7 +93,6 @@ export const ShowsScreen: React.FC = () => {
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header title="Upcoming Shows" />
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>{error}</Text>
@@ -93,8 +110,7 @@ export const ShowsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Upcoming Shows" />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FF6B00']} tintColor="#FF6B00" />}>
         {/* Filters */}
         <View style={styles.filterContainer}>
           <FilterChip
@@ -130,6 +146,9 @@ export const ShowsScreen: React.FC = () => {
             ))
           )}
         </View>
+        <Text style={styles.disclaimer}>
+          Tour dates, ticket availability, and event schedules are subject to change. Chill Chum Hub does not sell tickets, manage box office inventory, or process transactions. All ticketing links redirect to official primary ticketing partners (Ticketmaster, venue box offices).
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -142,7 +161,8 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: 0,
   },
   filterContainer: {
     flexDirection: 'row',
@@ -165,5 +185,14 @@ const styles = StyleSheet.create({
     color: colors.gray600,
     fontSize: typography.fontSize.md,
     textAlign: 'center',
+  },
+  disclaimer: {
+    color: colors.gray500,
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.sm,
+    lineHeight: 16,
   },
 });

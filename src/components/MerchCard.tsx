@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   },
   thumbnailContainer: {
     width: '100%',
-    aspectRatio: 1,
+    height: 200,
     backgroundColor: colors.gray200,
   },
   thumbnail: {

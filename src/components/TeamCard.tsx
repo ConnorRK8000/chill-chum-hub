@@ -34,6 +34,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ member, onPress, style }) =>
 
 const styles = StyleSheet.create({
   card: {
+    width: '100%',
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     overflow: 'hidden',
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
   },
   photoContainer: {
     width: '100%',
-    aspectRatio: 1,
+    height: 240,
     backgroundColor: colors.gray200,
   },
   photo: {

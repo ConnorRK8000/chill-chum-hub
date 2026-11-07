@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, SafeAreaView, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, SafeAreaView, Linking, RefreshControl } from 'react-native';
 import {
-  Header,
   MerchCard,
-  FilterChip,
   LoadingSpinner,
   Skeleton,
   SkeletonCard,
-  SectionHeader,
+  Footer,
 } from '../components';
 import { colors, spacing, borderRadius, typography, shadows } from '../theme/colors';
 import { MerchItem } from '../types';
@@ -15,14 +13,12 @@ import { merchService, fallbackMerchData } from '../services/MerchService';
 
 export const MerchScreen: React.FC = () => {
   const [products, setProducts] = useState<MerchItem[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<MerchItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const loadMerch = async () => {
       setLoading(true);
-      setError(null);
       try {
         const response = await merchService.getMerch();
         if (response.error) {
@@ -45,15 +41,26 @@ export const MerchScreen: React.FC = () => {
     loadMerch();
   }, []);
 
-  useEffect(() => {
-    setFilteredProducts(products);
-  }, [products]);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const products = await merchService.forceRefresh();
+      if (products && products.length > 0) {
+        setProducts(products);
+      } else {
+        setProducts(fallbackMerchData);
+      }
+    } catch {
+      setProducts(fallbackMerchData);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header title="Merch Store" />
-        <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FF6B00']} tintColor="#FF6B00" />}>
           <SkeletonCard aspectRatio={1} style={styles.skeletonCard} />
           <SkeletonCard aspectRatio={1} style={styles.skeletonCard} />
           <SkeletonCard aspectRatio={1} style={styles.skeletonCard} />
@@ -64,16 +71,15 @@ export const MerchScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Merch Store" />
       <ScrollView contentContainerStyle={styles.content}>
         {/* Merch Grid */}
         <View style={styles.grid}>
-          {filteredProducts.length === 0 ? (
+          {products.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>No merch available.</Text>
             </View>
           ) : (
-            filteredProducts.map(product => (
+            products.map(product => (
               <View key={product.id} style={styles.gridItem}>
                 <MerchCard
                   item={product}
@@ -83,6 +89,10 @@ export const MerchScreen: React.FC = () => {
             ))
           )}
         </View>
+        <Text style={styles.disclaimer}>
+          All merchandise and product imagery are copyright © PodSwag / Team Coco. Chill Chum Hub does not sell products, process transactions, or receive affiliate commissions. All purchase links redirect to official storefronts.
+        </Text>
+        <Footer />
       </ScrollView>
     </SafeAreaView>
   );
@@ -95,20 +105,19 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: 0,
   },
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     gap: spacing.md,
   },
   gridItem: {
-    width: '48%',
+    width: '100%',
     marginBottom: spacing.md,
   },
   skeletonCard: {
-    width: '48%',
+    width: '100%',
     marginBottom: spacing.md,
   },
   emptyState: {
@@ -119,5 +128,14 @@ const styles = StyleSheet.create({
   emptyText: {
     color: colors.gray600,
     fontSize: typography.fontSize.md,
+  },
+  disclaimer: {
+    color: colors.gray500,
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.sm,
+    lineHeight: 16,
   },
 });
