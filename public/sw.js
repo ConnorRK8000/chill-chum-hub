@@ -1,5 +1,5 @@
 const BASE = '/chill-chum-hub';
-const CACHE_NAME = 'chill-chum-hub-v1';
+const CACHE_NAME = 'chill-chum-hub-v2';
 const urlsToCache = [BASE + '/', BASE + '/index.html', BASE + '/manifest.json', BASE + '/icon-192.png', BASE + '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -25,12 +25,18 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
-  if (url.includes('workers.dev') || url.includes('/latest') || url.includes('/shows') || url.includes('/merch')) {
+  // Network-first for navigation (HTML) and live data
+  if (event.request.mode === 'navigate' || url.includes('workers.dev') || url.includes('/latest') || url.includes('/shows') || url.includes('/merch')) {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request).then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      }).catch(() => caches.match(event.request))
     );
     return;
   }
+  // Cache-first for static assets
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);
