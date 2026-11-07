@@ -161,30 +161,20 @@ export const HomeScreen: React.FC = () => {
         {/* Video Clip Card - exact CSS: height: 280px for thumbnail, border-radius: 12px, margin-bottom: 1.5rem (24px) */}
         <Card variant="elevated" style={styles.clipCard}>
           <View style={styles.videoContainer}>
-            {Platform.OS === 'web' ? (
-              React.createElement('iframe', {
-                src: 'https://www.youtube.com/embed?listType=user_uploads&list=UCi7GJNg51C3jgmYTUwqoUXA',
-                title: 'Latest Team Coco Upload',
-                style: { width: '100%', height: '100%', border: 'none' },
-                allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
-                allowFullScreen: true,
-              })
-            ) : (
-              <TouchableOpacity
-                style={styles.thumbnailContainer}
-                onPress={() => Linking.openURL('https://www.youtube.com/@TeamCoco/videos')}
-                activeOpacity={0.9}
-              >
-                <Image
-                  source={{ uri: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg' }}
-                  style={styles.thumbnailImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.playOverlay}>
-                  <PlayButton size={72} />
-                </View>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={styles.thumbnailContainer}
+              onPress={() => Linking.openURL('https://www.youtube.com/@TeamCoco/videos')}
+              activeOpacity={0.9}
+            >
+              <Image
+                source={{ uri: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg' }}
+                style={styles.thumbnailImage}
+                resizeMode="cover"
+              />
+              <View style={styles.playOverlay}>
+                <PlayButton size={72} />
+              </View>
+            </TouchableOpacity>
           </View>
           <TouchableOpacity
             style={styles.watchButton}
