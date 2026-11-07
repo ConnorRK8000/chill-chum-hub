@@ -76,14 +76,15 @@ export interface Sponsor {
 }
 
 export interface VideoResponse {
-  videoId?: string;
-  title?: string;
-  description?: string;
-  publishedAt?: string;
-  thumbnail?: string;
-  error?: boolean;
-  message?: string;
-  _stale?: boolean;
+    videoId?: string;
+    title?: string;
+    description?: string;
+    publishedAt?: string;
+    thumbnail?: string;
+    thumbnailUrl?: string;
+    error?: boolean;
+    message?: string;
+    _stale?: boolean;
 }
 
 export interface ShowsResponse {
