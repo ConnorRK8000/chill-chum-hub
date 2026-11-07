@@ -160,54 +160,39 @@ export const HomeScreen: React.FC = () => {
 
         {/* Video Clip Card - exact CSS: height: 280px for thumbnail, border-radius: 12px, margin-bottom: 1.5rem (24px) */}
         <Card variant="elevated" style={styles.clipCard}>
-          {hasVideo && video?.videoId ? (
-            <>
-              <View style={styles.videoContainer}>
-                {Platform.OS === 'web' ? (
-                  React.createElement('iframe', {
-                    src: VideoService.getEmbedUrl(video.videoId),
-                    title: video.title,
-                    style: { width: '100%', height: '100%', border: 'none' },
-                    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
-                    allowFullScreen: true,
-                  })
-                ) : (
-                  <TouchableOpacity
-                    style={styles.thumbnailContainer}
-                    onPress={() => handleWatchOnYouTube(video.videoId!)}
-                    activeOpacity={0.9}
-                  >
-                    <Image
-                      source={{ uri: VideoService.getThumbnailUrl(video.videoId) }}
-                      style={styles.thumbnailImage}
-                      resizeMode="cover"
-                    />
-                    <View style={styles.playOverlay}>
-                      <PlayButton size={72} />
-                    </View>
-                  </TouchableOpacity>
-                )}
-              </View>
+          <View style={styles.videoContainer}>
+            {Platform.OS === 'web' ? (
+              React.createElement('iframe', {
+                src: 'https://www.youtube.com/embed?listType=user_uploads&list=UCi7GJNg51C3jgmYTUwqoUXA',
+                title: 'Latest Team Coco Upload',
+                style: { width: '100%', height: '100%', border: 'none' },
+                allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+                allowFullScreen: true,
+              })
+            ) : (
               <TouchableOpacity
-                style={styles.watchButton}
-                onPress={() => handleWatchOnYouTube(video.videoId!)}
-                activeOpacity={0.8}
+                style={styles.thumbnailContainer}
+                onPress={() => Linking.openURL('https://www.youtube.com/@TeamCoco/videos')}
+                activeOpacity={0.9}
               >
-                <Text style={styles.watchButtonText}>▶ Watch on YouTube</Text>
+                <Image
+                  source={{ uri: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg' }}
+                  style={styles.thumbnailImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.playOverlay}>
+                  <PlayButton size={72} />
+                </View>
               </TouchableOpacity>
-            </>
-          ) : (
-            <View style={styles.placeholderContainer}>
-              <PlayButton size={72} />
-              <Image
-                source={{
-                  uri: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 16 9\'%3E%3Crect fill=\'%23000\' width=\'16\' height=\'9\'/%3E%3Ctext x=\'8\' y=\'24.5\' font-family=\'Arial Black\' font-size=\'1.8\' fill=\'%23FF6B00\' text-anchor=\'middle\'%3ECONAN%3C/text%3E%3Ctext x=\'8\' y=\'26.5\' font-family=\'Arial\' font-size=\'0.9\' fill=\'white\' text-anchor=\'middle\'%3ENEEDS A FRIEND%3C/text%3E%3C/svg%3E'
-                }}
-                style={styles.placeholderImage}
-                resizeMode="contain"
-              />
-            </View>
-          )}
+            )}
+          </View>
+          <TouchableOpacity
+            style={styles.watchButton}
+            onPress={() => Linking.openURL('https://www.youtube.com/@TeamCoco/videos')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.watchButtonText}>▶ Watch on YouTube</Text>
+          </TouchableOpacity>
         </Card>
 
         {/* Platforms - exact CSS: gap: 1rem (16px), margin-bottom: 1rem (16px) */}
