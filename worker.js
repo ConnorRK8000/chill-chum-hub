@@ -64,7 +64,8 @@ async function fetchYouTubeRSS() {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=900, stale-while-revalidate=1800'
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'X-Worker-Version': 'v3-scrape'
       }
     });
   } catch (error) {
@@ -91,8 +92,8 @@ function parseYouTubeChannel(html) {
       ids.push(id);
     }
   }
-  // The first unique id is usually a YouTube UI element; skip it
-  const videoId = ids.length > 1 ? ids[1] : (ids[0] || null);
+  // The first unique id is the latest upload
+  const videoId = ids.length > 0 ? ids[0] : null;
   if (!videoId) return null;
   
   // Try to extract title near this videoId

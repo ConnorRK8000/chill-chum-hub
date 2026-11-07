@@ -9,9 +9,9 @@ export interface VideoServiceConfig {
 }
 
 const defaultConfig: VideoServiceConfig = {
-  proxyUrl: 'https://teamcoco-youtube-proxy.eam--oco--pp.workers.dev/latest',
+  proxyUrl: 'https://teamcoco-youtube-proxy.eam--oco--pp.workers.dev/latest2',
   cacheKey: 'teamcoco_latest_video',
-  cacheExpiry: 1000 * 60 * 60 * 24, // 24 hours
+  cacheExpiry: 1000 * 60 * 15, // 15 minutes
   fetchTimeout: 8000,
 };
 
