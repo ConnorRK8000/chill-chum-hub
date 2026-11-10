@@ -11,6 +11,7 @@ async function initApp() {
     initSplashScreen();
     setupNavigation();
     setupEventListeners();
+    setupInstallPrompt();
     renderVideosPage();
     await renderShowsPage();
     renderMerchPage();
@@ -23,7 +24,10 @@ async function initApp() {
 
 function initSplashScreen() {
     const splashScreen = document.getElementById('splash-screen');
-    if (!splashScreen) return;
+    if (!splashScreen) {
+        scheduleInstallPrompt();
+        return;
+    }
     
     // Show splash for 3 seconds, then fade out
     setTimeout(() => {
@@ -32,6 +36,7 @@ function initSplashScreen() {
         // Remove from DOM after transition
         setTimeout(() => {
             splashScreen.remove();
+            scheduleInstallPrompt();
         }, 800);
     }, 3000);
 }
@@ -730,6 +735,100 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function isStandaloneMode() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
+        window.navigator.standalone === true;
+}
+
+function getInstallInstructions() {
+    const ua = navigator.userAgent || '';
+    const platform = navigator.platform || '';
+    const maxTouchPoints = navigator.maxTouchPoints || 0;
+    const isIOS = /iPad|iPhone|iPod/i.test(ua) || (platform === 'MacIntel' && maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(ua);
+
+    if (isIOS) {
+        return {
+            title: 'Add it to your device',
+            intro: 'Recommended for iPhone/iPad:',
+            steps: [
+                'iPhone (Safari): Tap the Share button (box with arrow) ➔ select Add to Home Screen.'
+            ],
+            note: ''
+        };
+    }
+
+    if (isAndroid) {
+        return {
+            title: 'Add it to your device',
+            intro: 'Recommended for Android:',
+            steps: [
+                'Android (Chrome): Tap the three dots (⋮) ➔ select Install app (or Add to Home screen).'
+            ],
+            note: ''
+        };
+    }
+
+    return {
+        title: 'Add it to your device',
+        intro: 'Choose the steps for your device:',
+        steps: [
+            'iPhone (Safari): Tap the Share button (box with arrow) ➔ select Add to Home Screen.',
+            'Android (Chrome): Tap the three dots (⋮) ➔ select Install app (or Add to Home screen).'
+        ],
+        note: ''
+    };
+}
+
+function setupInstallPrompt() {
+    const prompt = document.getElementById('install-prompt');
+    const closeBtn = document.getElementById('install-prompt-close');
+    if (!prompt || !closeBtn) return;
+
+    closeBtn.addEventListener('click', () => {
+        prompt.hidden = true;
+    });
+}
+
+function scheduleInstallPrompt() {
+    if (isStandaloneMode()) return;
+
+    setTimeout(() => {
+        if (isStandaloneMode()) return;
+        showInstallPrompt();
+    }, 2500);
+}
+
+function showInstallPrompt() {
+    const prompt = document.getElementById('install-prompt');
+    const stepsContainer = document.getElementById('install-prompt-steps');
+    const titleEl = document.getElementById('install-prompt-title');
+    const introEl = document.querySelector('.install-prompt-intro');
+    if (!prompt || !stepsContainer) return;
+
+    const info = getInstallInstructions();
+    if (titleEl) titleEl.textContent = info.title;
+    if (introEl) {
+        if (info.intro) {
+            introEl.textContent = info.intro;
+            introEl.hidden = false;
+        } else {
+            introEl.textContent = '';
+            introEl.hidden = true;
+        }
+    }
+
+    const stepsHtml = info.steps.map(step => `<li>${step}</li>`).join('');
+    const noteHtml = info.note ? `<p class="install-note">${info.note}</p>` : '';
+    stepsContainer.innerHTML = `
+        <ol>${stepsHtml}</ol>
+        ${noteHtml}
+    `;
+
+    prompt.hidden = false;
 }
 
 // Initialize app when DOM is ready
