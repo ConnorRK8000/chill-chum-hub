@@ -1,5 +1,5 @@
 const BASE = '/chill-chum-hub';
-const CACHE_NAME = 'chill-chum-hub-v2';
+const CACHE_NAME = 'chill-chum-hub-v3.0.0';
 const urlsToCache = [BASE + '/', BASE + '/index.html', BASE + '/manifest.json', BASE + '/icon-192.png', BASE + '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
