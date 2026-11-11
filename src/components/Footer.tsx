@@ -23,7 +23,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 3,
     borderTopColor: '#FF6B00',
     marginHorizontal: -16,
-    marginTop: 24,
     width: 'auto',
   },
   content: {

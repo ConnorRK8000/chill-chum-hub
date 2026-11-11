@@ -1339,6 +1339,121 @@ body {
     line-height: 1.6;
 }
 
+/* Cocktail Recipes */
+.cocktail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.cocktail-card {
+    background: var(--white);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.cocktail-card:hover,
+.cocktail-card:focus-visible {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.cocktail-image-wrap {
+    width: 100%;
+    height: 260px;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cocktail-image-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.cocktail-card-info {
+    padding: 0.875rem 1rem 1rem;
+    text-align: center;
+}
+
+.cocktail-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.4;
+}
+
+.cocktail-modal-content {
+    max-width: 720px;
+    background: var(--black);
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.cocktail-modal-content .modal-close {
+    background: rgba(255, 107, 0, 0.15);
+    color: var(--primary-color);
+}
+
+.cocktail-modal-content .modal-close:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.cocktail-modal-body {
+    padding: 1.25rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.cocktail-modal-body img {
+    display: none;
+}
+
+.cocktail-modal-info h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+#cocktail-modal-details {
+    color: var(--primary-color);
+    line-height: 1.6;
+}
+
+#cocktail-modal-details h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0.75rem 0 0.375rem;
+}
+
+#cocktail-modal-details h3:first-child {
+    margin-top: 0;
+}
+
+#cocktail-modal-details ul,
+#cocktail-modal-details ol {
+    margin: 0 0 0.5rem 1.25rem;
+    padding: 0;
+}
+
+#cocktail-modal-details li {
+    margin-bottom: 0.375rem;
+}
+
 /* Newsletter */
 .newsletter-section {
     margin-top: 2.5rem;
@@ -1716,6 +1831,10 @@ body {
     }
     
     .team-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cocktail-grid {
         grid-template-columns: 1fr;
     }
     

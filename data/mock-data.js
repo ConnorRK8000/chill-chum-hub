@@ -241,3 +241,85 @@ const mockSponsors = [
         url: 'https://www.squarespace.com'
     }
 ];
+
+const mockCocktails = [
+    {
+        id: '1',
+        name: 'Chilled Chum',
+        image: 'assets/images/Chilled Chum Clip Art.jpeg',
+        ingredients: [
+            '1.5 oz Bourbon (Maker’s Mark)',
+            '1.0 oz Pomegranate Juice (POM Wonderful)',
+            '0.5 oz Fresh Lemon Juice',
+            '2–3 Fresh Strawberries (muddled)',
+            'Bundaberg Ginger Beer (to float)'
+        ],
+        steps: [
+            'Muddle: Gently press fresh strawberries in the bottom of your shaker tin to release juices.',
+            'Combine & Shake: Pour in bourbon, pomegranate juice, lemon juice, and ice. Shake hard until ice-cold.',
+            'Strain: Pour the contents over fresh cubed ice into a highball glass.',
+            'Finish: Lengthen with a splash of ginger beer to taste and stir once gently.'
+        ]
+    },
+    {
+        id: '2',
+        name: 'Ginger Menace',
+        image: 'assets/images/Ginger Menace Clip Art.jpeg',
+        ingredients: [
+            '1.5 oz Cuban Rum (Havana Club or similar light/gold rum)',
+            '1.0 oz Aperol',
+            '0.5 oz Fresh Lemon Juice',
+            '0.25 tsp Fresh Ginger (finely grated on a microplane)',
+            '1.5 oz Bundaberg Ginger Beer (to top)',
+            'Optional: Pinch of edible cocktail glitter',
+            'Garnish: Fresh mint sprig and a carved grapefruit peel (shaped into Conan\'s pompadour)'
+        ],
+        steps: [
+            'Shake: Add rum, Aperol, lemon juice, grated ginger, and optional glitter into an ice-filled shaker.',
+            'Chill: Shake vigorously for 15 seconds until the tin frosts over.',
+            'Double Strain: Fine-strain over fresh rocks into a chilled tumbler or rocks glass.',
+            'Top & Crown: Top off with Bundaberg ginger beer. Finish with mint and the grapefruit pompadour cutout.'
+        ]
+    },
+    {
+        id: '3',
+        name: "S'mores-sessian",
+        image: 'assets/images/Smoresesian Clip Art.jpeg',
+        ingredients: [
+            '2.0 oz Whiskey (Bourbon or WhistlePig Rye)',
+            '1.0 oz Dark Chocolate Liqueur',
+            '0.5 oz Simple Syrup',
+            '2 dashes Angostura Bitters',
+            'Rim: Chocolate syrup & crushed graham cracker crumbs',
+            'Garnish: Mini s\'more on a cocktail pick (graham crackers, chocolate, and toasted marshmallow)'
+        ],
+        steps: [
+            'Prep the Rim: Dip the lip of an Old Fashioned glass in chocolate sauce, then press into crushed graham cracker crumbs.',
+            'Stir: Add whiskey, chocolate liqueur, simple syrup, and bitters to an ice-filled mixing glass. Stir smoothly for 30 seconds to chill without over-diluting.',
+            'Pour: Strain cleanly over a single large ice block in your prepared glass.',
+            'Char & Skewer: Lightly torch the mini s\'more skewer until blistered and rest it angled down into the glass.'
+        ]
+    },
+    {
+        id: '4',
+        name: 'Sun Damage',
+        image: 'assets/images/Sun Damage Clip Art.jpeg',
+        ingredients: [
+            '2.0 oz Blanco Tequila',
+            '1.0 oz Aperol',
+            '1.5 oz Fresh Ruby Red Grapefruit Juice',
+            '0.75 oz Fresh Lime Juice',
+            '0.5 oz Agave Nectar',
+            '1 Fresh Egg White (or 1 oz Aquafaba)',
+            '1.0 oz Grapefruit Soda/Seltzer (to top)',
+            'The Texture/Gimmick: Mixed boba pearls (red, white, and black)',
+            'Garnish: Paper cocktail umbrella alongside a hollowed half-lime filled with vanilla pudding'
+        ],
+        steps: [
+            'Dry Shake: Combine tequila, Aperol, grapefruit juice, lime juice, agave, and egg white in your tin without ice. Shake hard for 10 seconds to build foam.',
+            'Wet Shake: Add ice cubes and shake again until frost forms on the metal.',
+            'Double Strain: Strain the velvety liquid into a chilled coupe glass.',
+            'Assemble: Top gently with sparkling grapefruit seltzer. Sink the boba pearls to the base, and balance your lime-pudding cup and paper umbrella on top.'
+        ]
+    }
+];

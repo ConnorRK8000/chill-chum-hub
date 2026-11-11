@@ -11,6 +11,7 @@ import { ShowsScreen } from '../screens/ShowsScreen';
 import { MerchScreen } from '../screens/MerchScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
 import { TeamScreen } from '../screens/TeamScreen';
+import { CocktailScreen } from '../screens/CocktailScreen';
 
 const HomeIcon: React.FC = () => (
   <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,6 +53,15 @@ const PeopleIcon: React.FC = () => (
   </Svg>
 );
 
+const CocktailIcon: React.FC = () => (
+  <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M8 2h8l-1 7H9L8 2z" />
+    <Path d="M6 9h12l-1.5 5.5A4 4 0 0 1 12.64 18H11.36a4 4 0 0 1-3.86-3.5L6 9z" />
+    <Line x1="12" y1="18" x2="12" y2="22" />
+    <Line x1="8" y1="22" x2="16" y2="22" />
+  </Svg>
+);
+
 const tabs: NavTab[] = [
   {
     name: 'home',
@@ -81,6 +91,11 @@ const tabs: NavTab[] = [
     hidden: true,
   },
   {
+    name: 'cocktails',
+    label: 'Cocktails',
+    icon: <CocktailIcon />,
+  },
+  {
     name: 'team',
     label: 'Meet The Chums',
     icon: <PeopleIcon />,
@@ -93,11 +108,12 @@ const screenComponents = {
   shows: ShowsScreen,
   merch: MerchScreen,
   community: CommunityScreen,
+  cocktails: CocktailScreen,
   team: TeamScreen,
 };
 
 export const MainTabNavigator: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'videos' | 'shows' | 'merch' | 'community' | 'team'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'videos' | 'shows' | 'merch' | 'community' | 'cocktails' | 'team'>('home');
 
   const handleTabPress = (tabName: string) => {
     setActiveTab(tabName as any);

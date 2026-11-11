@@ -2,12 +2,14 @@
 import { videoService, formatVideoDate, getEmbedUrl, getDeepLink } from './video-service.js';
 import { showsService } from './shows-service.js';
 import { merchService } from './merch-service.js';
+import { initWebTracker, trackInstallPromptShown } from './tracker.js';
 
 let currentPage = 'home';
 let currentTab = 'discussions';
 let currentTourFilter = 'upcoming';
 
 async function initApp() {
+    initWebTracker();
     initSplashScreen();
     setupNavigation();
     setupEventListeners();
@@ -17,6 +19,7 @@ async function initApp() {
     renderMerchPage();
     renderCommunityPage();
     renderTeamPage();
+    renderCocktailsPage();
     // renderSponsorBanner();  // Hidden
     await renderLatestVideo();
     showToast('Welcome to Team Coco!');
@@ -95,6 +98,8 @@ function switchPage(pageName) {
             renderCommunityPage();
         } else if (pageName === 'team') {
             renderTeamPage();
+        } else if (pageName === 'cocktails') {
+            renderCocktailsPage();
         }
     }
 }
@@ -125,6 +130,29 @@ function setupEventListeners() {
         // Close modal
         if (e.target.closest('[data-action="close-modal"]')) {
             closeVideoModal();
+        }
+
+        if (e.target.closest('[data-action="close-cocktail-modal"]')) {
+            closeCocktailModal();
+        }
+
+        // Footer nav links
+        const footerLink = e.target.closest('.footer-nav a[data-page]');
+        if (footerLink) {
+            e.preventDefault();
+            const page = footerLink.getAttribute('data-page');
+            if (page) {
+                switchPage(page);
+                document.querySelectorAll('.nav-btn').forEach(nb => {
+                    nb.classList.remove('active');
+                    nb.removeAttribute('aria-current');
+                });
+                const targetBtn = document.querySelector(`.nav-btn[data-page="${page}"]`);
+                if (targetBtn) {
+                    targetBtn.classList.add('active');
+                    targetBtn.setAttribute('aria-current', 'page');
+                }
+            }
         }
         
         // Section header buttons
@@ -230,6 +258,7 @@ function setupEventListeners() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeVideoModal();
+            closeCocktailModal();
         }
     });
 }
@@ -514,6 +543,83 @@ function renderTeamPage() {
         const memberCard = createTeamCard(member);
         teamGrid.appendChild(memberCard);
     });
+}
+
+function renderCocktailsPage() {
+    const grid = document.getElementById('cocktail-grid');
+    if (!grid || typeof mockCocktails === 'undefined') return;
+
+    grid.innerHTML = '';
+    mockCocktails.forEach(cocktail => {
+        grid.appendChild(createCocktailCard(cocktail));
+    });
+}
+
+function createCocktailCard(cocktail) {
+    const card = document.createElement('article');
+    card.className = 'cocktail-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `${cocktail.name} recipe`);
+    card.innerHTML = `
+        <div class="cocktail-image-wrap">
+            <img src="${cocktail.image}" alt="${escapeHtml(cocktail.name)}">
+        </div>
+        <div class="cocktail-card-info">
+            <h3 class="cocktail-name">${escapeHtml(cocktail.name)}</h3>
+        </div>
+    `;
+
+    const open = () => openCocktailModal(cocktail.id);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            open();
+        }
+    });
+    return card;
+}
+
+function openCocktailModal(id) {
+    const cocktail = (typeof mockCocktails !== 'undefined' ? mockCocktails : []).find(c => c.id === id);
+    const modal = document.getElementById('cocktail-modal');
+    if (!cocktail || !modal) return;
+
+    const title = document.getElementById('cocktail-modal-title');
+    const image = document.getElementById('cocktail-modal-image');
+    const details = document.getElementById('cocktail-modal-details');
+
+    if (title) title.textContent = cocktail.name;
+    if (image) {
+        image.src = '';
+        image.alt = '';
+    }
+    if (details) {
+        if ((cocktail.ingredients && cocktail.ingredients.length) || (cocktail.steps && cocktail.steps.length)) {
+            let html = '';
+            if (cocktail.ingredients && cocktail.ingredients.length) {
+                html += `<h3>Ingredients</h3><ul>${cocktail.ingredients.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+            }
+            if (cocktail.steps && cocktail.steps.length) {
+                html += `<h3>Steps</h3><ol>${cocktail.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ol>`;
+            }
+            details.innerHTML = html;
+        } else {
+            details.innerHTML = `<p>${escapeHtml(cocktail.recipe || 'Recipe details coming soon.')}</p>`;
+        }
+    }
+
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCocktailModal() {
+    const modal = document.getElementById('cocktail-modal');
+    if (modal) {
+        modal.hidden = true;
+        document.body.style.overflow = 'auto';
+    }
 }
 
 function renderSponsorBanner() {
@@ -829,6 +935,7 @@ function showInstallPrompt() {
     `;
 
     prompt.hidden = false;
+    trackInstallPromptShown();
 }
 
 // Initialize app when DOM is ready
