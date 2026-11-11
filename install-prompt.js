@@ -1,4 +1,24 @@
 (function () {
+  var TRACKER_ENDPOINT = (window.__TEAM_COCO_TRACKER_ENDPOINT__) || 'https://teamcoco-tracker-proxy.eam--oco--pp.workers.dev/collect';
+
+  function trackInstallPromptShown() {
+    try {
+      var body = JSON.stringify({
+        event: 'install_prompt_shown',
+        surface: 'web-browser',
+        displayMode: 'browser',
+        preConversion: true,
+        ts: new Date().toISOString(),
+        path: (location.pathname || '/') + (location.search || '')
+      });
+      if (navigator.sendBeacon) {
+        var blob = new Blob([body], { type: 'application/json' });
+        if (navigator.sendBeacon(TRACKER_ENDPOINT, blob)) return;
+      }
+      fetch(TRACKER_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true, mode: 'cors', credentials: 'omit' }).catch(function () {});
+    } catch (e) {}
+  }
+
   function isStandaloneMode() {
     return window.matchMedia('(display-mode: standalone)').matches ||
       window.matchMedia('(display-mode: fullscreen)').matches ||
@@ -55,6 +75,7 @@
       '</div>';
 
     document.body.appendChild(wrap);
+    trackInstallPromptShown();
     var closeBtn = document.getElementById('install-prompt-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', function () { wrap.remove(); });
